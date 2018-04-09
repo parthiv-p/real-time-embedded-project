@@ -30,7 +30,7 @@ FTM0_MOD = 29999;//counts up to MOD then counts back up from 0, this is the peri
 }
 
 void loop() {
-FTM0_C4V = 1500; // count up to C4V and clear output, C4V/MOD duty cycle %
+FTM0_C4V = 1500;
 delay(2000);
 FTM0_C4V=2250;
 delay(2000);
