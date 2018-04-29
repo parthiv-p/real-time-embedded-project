@@ -1,0 +1,29 @@
+xmin = -23.78, xmax = 71.34
+ymin = -27.95, xmax = 57.15
+zmin = -71.29, zmax = 29.79
+
+xmin = -25.20, xmax = 68.86
+ymin = -25.82, xmax = 65.17
+zmin = -67.67, zmax = 24.97
+
+xmin = -28.57, xmax = 66.02
+ymin = -22.26, xmax = 61.61
+zmin = -68.53, zmax = 24.62
+
+xav_min = -25.85, xav_max = 68.74
+yav_min = -25.34 , yav_max = 61.31
+zav_min = -69.16, zav_max = 26.46
+
+xbias = 21.445
+ybias = 17.985
+zbias = -21.35
+
+xchord = 47.295
+ychord = 43.325
+zchord = 47.81
+
+avg = 46.1433
+
+xscale = 1.025
+yscale = 0.939
+zscale = 1.036
