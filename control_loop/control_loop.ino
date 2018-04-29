@@ -24,12 +24,14 @@ float decayRate = 0.9;
 unsigned long startTime, elapsedTime, execTime, turnTime;
 
 double yaw, yawAbs;
-double refCommand = 2.0*pi/4.0; // heading variable to be targeted
+double refCommand = 0;//2.0*pi/4.0; // heading variable to be targeted
 
 double kp = 7.0, ki = 12.0, kd = 0.25; // Ziegler-Nichols kc = 4, Tc = 0.7 s -> kp 2.4, ki 11.43, kd 0.35
 double omega_c = 100*2*pi;  // Cutoff frequency was set to 10 Hz
 double e_k = 0, e_k_1 = 0, d_k = 0, d_k_1 = 0, integ_k = 0, integ_k_1 = 0, filt = 0, filt_1 = 0;
 double speedCommand;
+int state = 1; // 1 keep straight, 2 turn
+
 
 void setup() {
   // serial to display data
@@ -65,8 +67,7 @@ void setup() {
   }
 
   // Accelerometer calibration
-
-  int accStatus = IMU.calibrateAccel();
+  int accStatus = IMU.calibrateAccel(); // This doesn't work
   Serial.println("Acc calib stat: " + String(accStatus));
   axb = IMU.getAccelBiasX_mss();
   ayb = IMU.getAccelBiasY_mss();
@@ -78,7 +79,6 @@ void setup() {
   Serial.println("axb:\t" + String(axb) + "\t axs:\t" + String(ays) + "\t ayb:\t" + String(ayb) + "\t ays:\t" + String(ays) + "\t azb:\t" + String(azb) + "\t azs:\t" + String(azs) );
 
   // Magnetometer calibration
-
   IMU.setMagCalX(magBias[0], magScale[0]);
   IMU.setMagCalY(magBias[1], magScale[1]);
   IMU.setMagCalZ(magBias[2], magScale[2]);
@@ -98,8 +98,8 @@ void setup() {
   Serial.println("mxb:\t" + String(mxb) + "\t mxs:\t" + String(mxs) + "\t ayb:\t" + String(myb) + "\t ays:\t" + String(mys) + "\t azb:\t" + String(mzb) + "\t azs:\t" + String(mzs) );
 
   // Initial angle shift determination
-  
   determineAngleShift();
+  
   startTime = micros();
   turnTime = millis();
 
@@ -119,13 +119,12 @@ void loop() {
   my = IMU.getMagY_uT();
   mz = IMU.getMagZ_uT();
 
-  // right turns are negative
   yaw =  computeYaw(ax, ay, az, mx, my, mz, angleShift);
-//  yawAbs = computeYaw(ax, ay, az, mx, my, mz, 0.0);
+  yawAbs = computeYaw(ax, ay, az, mx, my, mz, 0.0);
 
   // filtering
   yawSmooth = (1 - decayRate)*yaw + decayRate*yawSmooth;
-//  yawAbsSmooth = (1 - decayRate)*yawAbs + decayRate*yawAbsSmooth;
+  yawAbsSmooth = (1 - decayRate)*yawAbs + decayRate*yawAbsSmooth;
 //  Serial.println(String(yawSmooth) + "\t\t" + String(yawAbsSmooth));
 
   speedCommand = generateCommand(yawSmooth);
@@ -136,18 +135,56 @@ void loop() {
     
     if (speedCommand > 1){ speedCommand = 1; } 
     else if (speedCommand < -1) { speedCommand = -1; } // prevent PWM overflow issues
-    setLeftVel(-1.0*speedCommand);
-    setRightVel(speedCommand);
-    startTime = micros();
+
+    Serial.println(String(speedCommand));
+
+    switch(state)
+    {
+      case 1:
+        if (speedCommand > 1) 
+        {
+          setLeftVel(0.5-0.25*speedCommand);
+          setRightVel(0.5);
+        } else 
+        {
+          setLeftVel(0.5);
+          setRightVel(0.5+0.25*speedCommand);
+        }
+      break;
+      case 2:
+        setLeftVel(-1.0*speedCommand);
+        setRightVel(speedCommand);
+      break;
+    }
+    startTime = micros();  
   }
 
   //Serial.println("Elapsed: " + String(micros() - execTime));
 
-  if(millis() - turnTime >= 2000)
+  if(millis() - turnTime >= 3000) // change state
   {
     setLeftVel(0);
     setRightVel(0);
-    refCommand = -1.0*refCommand;
+    if (state == 1) // it was going straight
+    {
+      refCommand = pi/2.0; // left 90 deg turn
+      state = 2;
+    } else if (state == 2)
+    {
+      refCommand = 0;
+      state = 1;
+    }
+
+    // Reset PID states
+    e_k = 0;
+    e_k_1 = 0;
+    d_k = 0; 
+    d_k_1 = 0; 
+    integ_k = 0; 
+    integ_k_1 = 0; 
+    filt = 0; 
+    filt_1 = 0;
+    
     determineAngleShift();
     turnTime = millis();
   }
@@ -171,10 +208,8 @@ double computeYaw(float ax, float ay, float az, float mx, float my, float mz, fl
 
 void setLeftVel(float vel)
 {
-  // 0.3 is roughly the slowest possible
   float dir = vel * 750;
-  int pwmVal = (int)dir + 2250;
-  //Serial.println(String(pwmVal));
+  int pwmVal = (int)dir + 2250;  
   FTM0_C4V = pwmVal;
 }
 
@@ -187,7 +222,7 @@ void setRightVel(float vel)
 
 float generateCommand(double current)
 {
-  double error = refCommand - current; // right turns are negative - a command of 1 generates pos
+  double error = refCommand - current; // right turns are negative - a command of pi/2 generates pos
   double T = (micros() - execTime)/(1000000.0); // Sampling period
   
   e_k = error / (pi / 2); // 90 degree turns generate the most error - hence the highest possible turn at once
@@ -198,7 +233,7 @@ float generateCommand(double current)
   integ_k = integ_k_1 + (e_k + e_k_1)*(T/2);
 
   double pidOut = e_k * kp + kd * filt + ki * integ_k;
-  Serial.println(String(T) + "\t" + String(pidOut) + "\t" + String(e_k) + "\t" + String(filt)  + "\t" + String(integ_k));
+  //Serial.println(String(T) + "\t" + String(pidOut) + "\t" + String(e_k) + "\t" + String(filt)  + "\t" + String(integ_k));
   // updates
   e_k_1 = e_k;
   d_k_1 = d_k;
@@ -232,50 +267,5 @@ void determineAngleShift(void)
   }
   angleShift = -1.0*yawAbsSmooth;
   Serial.println("Angle set to " + String(angleShift));
-  }
+}
 
-/* Mag calibration snippet
-  
-  if (mx > mxb_max)
-    mxb_max = mx;
-  if (mx < mxb_min)
-    mxb_min = mx;
-
-  if (my > myb_max)
-    myb_max = my;
-  if (my < myb_min)
-    myb_min = my;  
-
-  if (mz > mzb_max)
-    mzb_max = mz;
-  if (mz < mzb_min)
-    mzb_min = mz;  
-  Serial.println(String(mxb_min) + "\t" + String(mxb_max) + "\t" + String(myb_min) + "\t" + String(myb_max) + "\t" + String(mzb_min) + "\t" + String(mzb_max));
-
-*/
-
-/*
-  backup
-pitch = atan2 (ay ,( sqrt ((ax * ax) + (az * az))));
-  roll = atan2(-ax ,( sqrt((ay * ay) + (az * az))));
-
-  // yaw from mag
-  float Yh = (my * cos(roll)) - (mz * sin(roll));
-  float Xh = (mx * cos(pitch))+(my * sin(roll)*sin(pitch)) + (mz * cos(roll) * sin(pitch));
-
-  yaw =  atan2(Yh, Xh);
-
-*/
-
-/*
-  ++counter;
-  if(counter >= upto)
-  {
-    angleShift = -1.0*yawAbsSmooth;
-    counter = 0;
-    Serial.println("Angle changed to " + String(angleShift));
-    yawSmooth = 0;
-  }
-*/
-
-//  Serial.println("y:" + String(yaw) + "\t p:" + String(pitch) + "\t r:" + String(roll));
