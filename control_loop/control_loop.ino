@@ -148,8 +148,8 @@ void loop() {
     switch(state)
     {
       case 1:
-        setLeftVel(0.45-0.4*speedCommand);
-        setRightVel(0.45+0.4*speedCommand);   
+        setLeftVel(-0.45-0.4*speedCommand); //setLeftVel(0.45-0.4*speedCommand); for fwd
+        setRightVel(-0.45+0.4*speedCommand); //setRightVel(0.45+0.4*speedCommand); for fwd   
       break;
       case 2:
         setLeftVel(-0.85*speedCommand);

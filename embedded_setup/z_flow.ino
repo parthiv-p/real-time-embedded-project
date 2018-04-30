@@ -12,6 +12,14 @@ void loop(){
             Serial.println("driving straight");
             drive_straight_fcn();
             break;
+        case correct_heading_s:
+            Serial.println("correcting heading");
+            correct_heading_fcn();
+            break;
+        case determine_action_s:
+            Serial.println("determining action");
+            determine_action_fcn();
+            break;
     }
 
     // when a new event occurs, update state
