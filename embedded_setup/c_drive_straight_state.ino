@@ -5,10 +5,8 @@ void drive_straight_fcn(){
   // drive motors
   
   // check proximity repeatedly
-  while(1){
-    if (find_distance() < 7){
-      key = danger_zone_k;
-      break;
-    }
+  while(find_distance() < 7){
+    forward(); //from b_motors
   }
+  key = danger_zone_k;
 }
