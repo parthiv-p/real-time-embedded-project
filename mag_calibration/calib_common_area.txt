@@ -1,0 +1,7 @@
+xbias = 17.569
+ybias = 20.618
+zbias = -20.612
+
+xscale = 0.992
+yscale = 1.069
+zscale = 0.946

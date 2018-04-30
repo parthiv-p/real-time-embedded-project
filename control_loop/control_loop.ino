@@ -9,7 +9,7 @@ const float pi = 3.14;
 float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values 
 //float ax_r, ay_r, mx_r, my_r;
 float mxb_max = -10000.0, mxb_min = 10000.0, myb_max = -10000.0, myb_min = 10000.0, mzb_max = -10000.0, mzb_min = 10000.0;
-float magBias[3] = {9.673, 14.4515, -15.33}, magScale[3] = {0.9537, 1.0218, 1.028}; // Location specific
+float magBias[3] = {17.569, 20.618, -20.612}, magScale[3] = {0.992, 1.069, 0.946}; // Location specific
 
 float axb, ayb, azb, axs, ays, azs;
 float mxb, myb, mzb, mxs, mys, mzs;
@@ -26,13 +26,20 @@ unsigned long startTime, elapsedTime, execTime, turnTime;
 double yaw, yawAbs;
 double refCommand = 0;//2.0*pi/4.0; // heading variable to be targeted
 
-double kp = 7.0, ki = 12.0, kd = 0.25; // Ziegler-Nichols kc = 4, Tc = 0.7 s -> kp 2.4, ki 11.43, kd 0.35
+double kp = 4.0, ki = 10.0, kd = 0.25; // Ziegler-Nichols kc = 4, Tc = 0.7 s -> kp 2.4, ki 11.43, kd 0.35
 double omega_c = 100*2*pi;  // Cutoff frequency was set to 10 Hz
 double e_k = 0, e_k_1 = 0, d_k = 0, d_k_1 = 0, integ_k = 0, integ_k_1 = 0, filt = 0, filt_1 = 0;
 double speedCommand;
 int state = 1; // 1 keep straight, 2 turn
 
-
+// Prototypes
+/*
+void determineAngleShift(void);
+double computeYaw(float, float, float, float, float, float, float);
+void setLeftVel(float);
+void setLeftVel(float);
+float generateCommand(double);
+*/
 void setup() {
   // serial to display data
   Serial.begin(115200);
@@ -54,7 +61,7 @@ void setup() {
   FTM0_CNTIN = 0; //Initial value is 0 for PWM counter, also edge align mode MUST use CNTIN by design
   FTM0_MOD = 29999;//counts up to MOD then counts back up from 0, this is the period of cycle
 
-  while(!Serial) {}
+  //while(!Serial) {}
 
   // start communication with IMU 
   status = IMU.begin();
@@ -120,40 +127,33 @@ void loop() {
   mz = IMU.getMagZ_uT();
 
   yaw =  computeYaw(ax, ay, az, mx, my, mz, angleShift);
-  yawAbs = computeYaw(ax, ay, az, mx, my, mz, 0.0);
+  // yawAbs = computeYaw(ax, ay, az, mx, my, mz, 0.0);
 
   // filtering
   yawSmooth = (1 - decayRate)*yaw + decayRate*yawSmooth;
-  yawAbsSmooth = (1 - decayRate)*yawAbs + decayRate*yawAbsSmooth;
+  // yawAbsSmooth = (1 - decayRate)*yawAbs + decayRate*yawAbsSmooth;
 //  Serial.println(String(yawSmooth) + "\t\t" + String(yawAbsSmooth));
 
   speedCommand = generateCommand(yawSmooth);
   elapsedTime = micros() - startTime;
   
-  if (elapsedTime >= 20000) //40ms interval for pwm
+  if (elapsedTime >= 40000) //40ms interval for pwm
   {
     
     if (speedCommand > 1){ speedCommand = 1; } 
     else if (speedCommand < -1) { speedCommand = -1; } // prevent PWM overflow issues
 
-    Serial.println(String(speedCommand));
+    //Serial.println(String(speedCommand));
 
     switch(state)
     {
       case 1:
-        if (speedCommand > 1) 
-        {
-          setLeftVel(0.5-0.25*speedCommand);
-          setRightVel(0.5);
-        } else 
-        {
-          setLeftVel(0.5);
-          setRightVel(0.5+0.25*speedCommand);
-        }
+        setLeftVel(0.45-0.4*speedCommand);
+        setRightVel(0.45+0.4*speedCommand);   
       break;
       case 2:
-        setLeftVel(-1.0*speedCommand);
-        setRightVel(speedCommand);
+        setLeftVel(-0.85*speedCommand);
+        setRightVel(0.85*speedCommand);
       break;
     }
     startTime = micros();  
@@ -161,7 +161,7 @@ void loop() {
 
   //Serial.println("Elapsed: " + String(micros() - execTime));
 
-  if(millis() - turnTime >= 3000) // change state
+  if(millis() - turnTime >= 5000) // change state
   {
     setLeftVel(0);
     setRightVel(0);
@@ -184,6 +184,7 @@ void loop() {
     integ_k_1 = 0; 
     filt = 0; 
     filt_1 = 0;
+
     
     determineAngleShift();
     turnTime = millis();
@@ -241,7 +242,7 @@ float generateCommand(double current)
 
   if (pidOut > -1 && pidOut < 1) // Integral anti wind-up condition
     integ_k_1 = integ_k;
-
+  Serial.println(String(e_k, 4));
   return 2.5*atan2(pidOut, 1)/pi; // for support at lower speeds
 }
 

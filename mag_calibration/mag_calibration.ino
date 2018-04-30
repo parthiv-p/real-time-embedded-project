@@ -34,6 +34,11 @@ float mxb_max = -10000.0, mxb_min = 10000.0, myb_max = -10000.0, myb_min = 10000
 float axb, ayb, azb, axs, ays, azs;
 float mxb, myb, mzb, mxs, mys, mzs;
 
+float loopCount = 5, sampCount = 1000; // 50 samp/sec -> 20 sec
+float biasX = 0, biasY = 0, biasZ = 0;
+float chordX = 0, chordY = 0, chordZ = 0, chordAvg = 0;
+float scaleX, scaleY, scaleZ;
+
 void setup() {
   // serial to display data
   Serial.begin(115200);
@@ -53,37 +58,64 @@ void setup() {
 
 void loop() {
 
-  // read the sensor
-  IMU.readSensor();
+  for(int loopCounter = 0; loopCounter < loopCount; loopCounter++)
+  {
+    mxb_max = -10000.0, mxb_min = 10000.0, myb_max = -10000.0, myb_min = 10000.0, mzb_max = -10000.0, mzb_min = 10000.0;
+    for (int sampCounter = 0; sampCounter < sampCount ; sampCounter++)
+    {
+       // read the sensor
+       IMU.readSensor();
+      
+       my = IMU.getMagY_uT();
+       mx = IMU.getMagX_uT();
+       mz = IMU.getMagZ_uT();
+      
+       // Mag calibration snippet
+       if (mx > mxb_max)
+         mxb_max = mx;
+       if (mx < mxb_min)
+         mxb_min = mx;
+      
+       if (my > myb_max)
+         myb_max = my;
+       if (my < myb_min)
+         myb_min = my;  
+      
+       if (mz > mzb_max)
+         mzb_max = mz;
+       if (mz < mzb_min)
+         mzb_min = mz;  
+       Serial.println(String(mxb_min) + "\t" + String(mxb_max) + "\t" + String(myb_min) + "\t" + String(myb_max) + "\t" + String(mzb_min) + "\t" + String(mzb_max));
+       delay(20);
+    }
 
-  my = IMU.getMagY_uT();
-  mx = IMU.getMagX_uT();
-  mz = IMU.getMagZ_uT();
-  ay = IMU.getAccelY_mss();
-  ax = IMU.getAccelX_mss();
-  az = IMU.getAccelZ_mss();
+    biasX = ((float)loopCounter * biasX + (mxb_max + mxb_min)/2.0)/((float)loopCounter+1.0);
+    biasY = ((float)loopCounter * biasY + (myb_max + myb_min)/2.0)/((float)loopCounter+1.0);
+    biasZ = ((float)loopCounter * biasZ + (mzb_max + mzb_min)/2.0)/((float)loopCounter+1.0);
 
-  // Mag calibration snippet
-  if (mx > mxb_max)
-    mxb_max = mx;
-  if (mx < mxb_min)
-    mxb_min = mx;
+    chordX = ((float)loopCounter * chordX + (mxb_max - mxb_min)/2.0)/((float)loopCounter+1.0);
+    chordY = ((float)loopCounter * chordY + (myb_max - myb_min)/2.0)/((float)loopCounter+1.0);
+    chordZ = ((float)loopCounter * chordZ + (mzb_max - mzb_min)/2.0)/((float)loopCounter+1.0);
+    
+    Serial.println("Finished trial " + String(loopCounter+1)); 
+    delay(1000);
+  }
 
-  if (my > myb_max)
-    myb_max = my;
-  if (my < myb_min)
-    myb_min = my;  
+  chordAvg = (chordX + chordY + chordZ)/3.0;
+  scaleX = chordAvg / chordX;
+  scaleY = chordAvg / chordY;
+  scaleZ = chordAvg / chordZ;
 
-  if (mz > mzb_max)
-    mzb_max = mz;
-  if (mz < mzb_min)
-    mzb_min = mz;  
-  Serial.println(String(mxb_min) + "\t" + String(mxb_max) + "\t" + String(myb_min) + "\t" + String(myb_max) + "\t" + String(mzb_min) + "\t" + String(mzb_max));
+  Serial.println("Calibration complete. Results:");
+  Serial.println("Biases:\n x = " + String(biasX, 4) + "\t y = " + String(biasY, 4) + "\t z = " + String(biasZ, 4));
+  Serial.println("Scales:\n x = " + String(scaleX, 4) + "\t y = " + String(scaleY, 4) + "\t z = " + String(scaleZ, 4));
 
   // Acceleration calibration snippet
 
   //Serial.println(String(ax) + "\t" + String(ay) + "\t" + String(az));
   delay(100);
+
+  while(1){}
 
 }
 
