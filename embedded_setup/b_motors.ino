@@ -2,21 +2,21 @@
 float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values 
 double refCommand = 0.0; // Target angle relative to start position (set by determineAngleShift())
 float angleShift = 0.0;
-int pwmLeft, pwmRight;
 
 double yaw, yawAbs;
 float yawSmooth, yawAbsSmooth;
 float decayRate = 0.9; // IIR moving average decay rate
 
-double kp = 4.0, ki = 10.0, kd = 0.25; // Ziegler-Nichols kc = 4, Tc = 0.7 s -> kp 2.4, ki 11.43, kd 0.35
-double omega_c = 100*2*pi;  // Cutoff frequency was set to 100 Hz
+double kp = 7.5, ki = 9.5, kd = 0.55; // Ziegler-Nichols kc = 4, Tc = 0.7 s -> kp 2.4, ki 11.43, kd 0.35
+double omega_c = 25*2*pi;  // Cutoff frequency was set to 100 Hz
 double e_k = 0, e_k_1 = 0, d_k = 0, d_k_1 = 0, integ_k = 0, integ_k_1 = 0, filt = 0, filt_1 = 0;
 double speedCommand, speedLeft, speedRight;
 
 double fwdScale = 0.4, turnScale = 0.85;
+int pwmLeft, pwmRight;
 
 unsigned long startTime = micros(), dutyTime, execTime, stateTime; // timing variables
-unsigned long turnLimit = 5000, straightLimit = 2000; // For the purposes of testing time triggers
+unsigned long turnLimit = 2000, straightLimit = 2000; // For the purposes of testing time triggers
 
 // C4V left, C5V right
 
@@ -54,7 +54,6 @@ void motorUpdate()    // Compute current yaw and generate feedback command
 
 void turn()   // Correct the heading to the reference angle (refCommand)
 {
-  Serial.println("Executed turn");
   motorUpdate();
   if (dutyTime >= 20000) //one PWM duty cycle have passed
   {
@@ -117,6 +116,7 @@ void motorStop()   // Stop vehicle immediately
 {
 	FTM0_C4V = 2250;
 	FTM0_C5V = 2250;
+  resetPID();
 }
 
 void determineAngleShift(void)    // Determine angle to reset frame of reference
@@ -154,10 +154,9 @@ double computeYaw(float angle)  // Compute the yaw relative to the given angle (
 
 float generateCommand(double current)   // PID controller to generate the speed control command
 {
-  double error = refCommand - current; // right turns are negative - a command of pi/2 generates pos
+  double e_k = refCommand - current; // right turns are negative - a command of pi/2 generates pos
   double T = (micros() - execTime)/(1000000.0); // Sampling period
-  
-  e_k = error / (pi / 2); // 90 degree turns generate the most error - hence the highest possible turn at once
+  // Serial.println(String(e_k, 4));
   
   // computations for PID
   d_k = -d_k_1 + (e_k - e_k_1)*(2/T);
@@ -177,5 +176,15 @@ float generateCommand(double current)   // PID controller to generate the speed 
   return 2.5*atan2(pidOut, 1)/pi; // for support at lower speeds
 }
 
-
+void resetPID()
+{
+    e_k = 0;
+    e_k_1 = 0;
+    d_k = 0; 
+    d_k_1 = 0; 
+    integ_k = 0; 
+    integ_k_1 = 0; 
+    filt = 0; 
+    filt_1 = 0;
+}
 

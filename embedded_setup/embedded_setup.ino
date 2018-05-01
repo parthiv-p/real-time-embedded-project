@@ -60,7 +60,7 @@ void setup(){
   FTM0_CNTIN = 0; //Initial value is 0 for PWM counter, also edge align mode MUST use CNTIN by design
   FTM0_MOD = 29999;//counts up to MOD then counts back up from 0, this is the period of cycle
   
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // IMU Configuration
   int status = IMU.begin();

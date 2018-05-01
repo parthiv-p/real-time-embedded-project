@@ -8,7 +8,7 @@ void correct_heading_fcn(){
   {
     turn();
     //Serial.println("Executed turn");
-    if(millis() - stateTime >= straightLimit)
+    if(millis() - stateTime >= turnLimit)
     {
       motorStop();
       refCommand = 0;
