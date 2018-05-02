@@ -95,7 +95,10 @@ float get_distance(){
 }
 
 void loop() {
-   
-   float distance = get_distance();
-   Serial.println(distance);
+    while (get_distance() > 20){
+//        Serial.print("Distance:  ");
+//        Serial.println(distance);
+        forward();
+    }
+    stop();
 }
