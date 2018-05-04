@@ -8,11 +8,11 @@ void correct_heading_fcn(){
   {
     turn();
     //Serial.println("Executed turn");
-    if(millis() - stateTime >= turnLimit)
+    if(millis() - stateTime >= settleTime)
     {
       motorStop();
+      reset_quaternion();
       refCommand = 0;
-      determineAngleShift();
       
       if (prev_event == decision_made_k)
       {
@@ -20,12 +20,15 @@ void correct_heading_fcn(){
         key = dec_timeout_k;
         break;
       } 
+      
+      /*
       else if (prev_event == timeout_k)
       {
         Serial.println("Timeout for straight movement correction");
         key = fwd_timeout_k;
         break;
       }
+      */
     }  
   }
 

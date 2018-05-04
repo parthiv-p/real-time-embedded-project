@@ -33,12 +33,14 @@
 */
 
 #include "MPU9250.h"
+#include <SharpIR.h>
 
 uint8_t trig_pin = 22;
 uint8_t echo_pin = 23;
+uint8_t sharp_pin = 21;
 
 // Motor control global variables
-float magBias[3] = {17.569, 20.618, -20.612}, magScale[3] = {0.992, 1.069, 0.946}; // Location specific
+float magBias[3] = {18.3323, 19.5858, -19.8197}, magScale[3] = {0.9555, 1.0546, 0.9949}; // Location specific
 const float pi = 3.14159;
 
 MPU9250 IMU(Wire,0x68);
@@ -72,14 +74,25 @@ void setup(){
     while(1) {}
   }
 
+  float mxb, myb, mzb, mxs, mys, mzs, gxb, gyb, gzb;
+
+  // Gyro calibration
+  int gyroStatus = IMU.calibrateGyro();
+
+  gxb = IMU.getGyroBiasX_rads();
+  gyb = IMU.getGyroBiasY_rads();
+  gzb = IMU.getGyroBiasZ_rads();
+  Serial.println("Gyro calibration results");
+  Serial.println("gxb:\t" + String(gxb) + "\t gyb:\t" + String(gyb) + "\t gzb:\t" + String(gzb));
+
+  delay(100);
+  
   // Magnetometer calibration
   IMU.setMagCalX(magBias[0], magScale[0]);
   IMU.setMagCalY(magBias[1], magScale[1]);
   IMU.setMagCalZ(magBias[2], magScale[2]);
   
   delay(100);
-
-  float mxb, myb, mzb, mxs, mys, mzs;
   
   // Sanity check
   mxb = IMU.getMagBiasX_uT();
@@ -92,7 +105,5 @@ void setup(){
 
   Serial.println("Magnetometer Calibration Sanity Check:");
   Serial.println("mxb:\t" + String(mxb) + "\t mxs:\t" + String(mxs) + "\t myb:\t" + String(myb) + "\t mys:\t" + String(mys) + "\t mzb:\t" + String(mzb) + "\t mzs:\t" + String(mzs) );
-
-  determineAngleShift(); // Reset starting reference frame
   
 }

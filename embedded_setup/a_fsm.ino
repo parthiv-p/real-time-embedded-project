@@ -1,6 +1,7 @@
 typedef enum{
     idle_s,
     drive_straight_s,
+    drive_backward_s,
     correct_heading_s,
     determine_action_s
 } state_t;
@@ -24,7 +25,7 @@ typedef struct{
 const state_transition_t transition_table[] = {
     // current state        event                next state
     {idle_s,                start_k,             drive_straight_s},
-    {drive_straight_s,      danger_zone_k,       idle_s},
+    {drive_straight_s,      danger_zone_k,       determine_action_s},
     {drive_straight_s,      timeout_k,           correct_heading_s},
     {correct_heading_s,     fwd_timeout_k,       determine_action_s},
     {correct_heading_s,     dec_timeout_k,       drive_straight_s},
