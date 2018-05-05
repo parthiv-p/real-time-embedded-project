@@ -14,7 +14,7 @@ float deltat;
 float yaw;
 
 double kp = 7, ki = 10.0, kd = 0.45; // Ziegler-Nichols kc = 4, Tc = 0.7 s -> kp 2.4, ki 11.43, kd 0.35
-double omega_c = 100*2*pi;  // Cutoff frequency was set to 100 Hz
+double omega_c = 100*2*PI;  // Cutoff frequency was set to 100 Hz
 double e_k = 0, e_k_1 = 0, d_k = 0, d_k_1 = 0, integ_k = 0, integ_k_1 = 0, filt = 0, filt_1 = 0;
 double speedCommand, speedLeft, speedRight;
 double refCommand = 0.0; // Target angle for turns
@@ -85,6 +85,7 @@ void turn()   // Correct the heading to the reference angle (refCommand)
 
 void forward()    // Forward motion in feedback loop
 {	
+  reset_quaternion();
 	update_command(); 
   if (dutyTime >= 20000) //one PWM duty cycle have passed
   {
@@ -94,7 +95,7 @@ void forward()    // Forward motion in feedback loop
     pwmRight = (int)speedRight + 2250;
     FTM0_C4V = pwmLeft;
     FTM0_C5V = pwmRight;
-    //Serial.println("fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
+    Serial.println("fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
     startTime = micros();
   }
 
@@ -117,9 +118,18 @@ void reverse()    // Backward motion in feedback loop
     startTime = micros();
   }
 
-//  FTM0_C4V = 1880;
-//  FTM0_C5V = 1900;
 }
+
+void left(){
+   FTM0_C4V = 2000;
+   FTM0_C5V = 2500;
+}
+
+void right(){
+   FTM0_C4V = 2500;
+   FTM0_C5V = 2000;
+}
+
 void motorStop()   // Stop vehicle immediately
 {
 	FTM0_C4V = 2250;
