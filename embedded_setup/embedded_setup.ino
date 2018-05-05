@@ -32,78 +32,33 @@
 
 */
 
-#include "MPU9250.h"
-#include <SharpIR.h>
+#include "arduinoFFT.h"
 
 uint8_t trig_pin = 22;
 uint8_t echo_pin = 23;
-uint8_t sharp_pin = 21;
+uint8_t tone_pin = A0; // analog input 0 (pin 14)
+uint8_t button_pin = 15;
+uint8_t led_pin = 13; // to signal that we are finished
 
-// Motor control global variables
-float magBias[3] = {18.3323, 19.5858, -19.8197}, magScale[3] = {0.9555, 1.0546, 0.9949}; // Location specific
-const float pi = 3.14159;
-
-MPU9250 IMU(Wire,0x68);
+// we can change the order of the beacons by changing this list
+double tone_list[] = {
+  5000,
+  5500,
+  6000,
+  6500,
+  7000,
+  7500,
+  8000,
+  8500,
+  9000,
+  9500
+};
 
 void setup(){
   pinMode(trig_pin, OUTPUT);
   pinMode(echo_pin, INPUT);
-
-  // PWM channel setup
-  PORTD_PCR4 |= (1U << 10); // mux to FTM0_C4 for pin 6 - left
-  PORTD_PCR5 |= (1U << 10); // mux to FTM0_C5 for pin 20 - right
-  FTM0_SC |= _BV(3); //Status control register , This selects system clock
-  FTM0_SC &= ~(_BV(4));
-  FTM0_MODE |= (1U << 2); //Mode register
-  FTM0_MODE |= _BV(1); // Enables FTM, this must come after the line above since this bit is write protected.
-  FTM0_SC |= 0x4; //set bit 0 1, USING 16 BIT RESOLUTION
-  FTM0_C4SC |= (1U << 3) | (1U << 5); // channel 4
-  FTM0_C5SC |= (1U << 3) | (1U << 5); // channel 5
-  FTM0_CNTIN = 0; //Initial value is 0 for PWM counter, also edge align mode MUST use CNTIN by design
-  FTM0_MOD = 29999;//counts up to MOD then counts back up from 0, this is the period of cycle
-  
-  Serial.begin(115200);
-
-  // IMU Configuration
-  int status = IMU.begin();
-  if (status < 0) {
-    Serial.println("IMU initialization unsuccessful");
-    Serial.println("Check IMU wiring or try cycling power");
-    Serial.print("Status: ");
-    Serial.println(status);
-    while(1) {}
-  }
-
-  float mxb, myb, mzb, mxs, mys, mzs, gxb, gyb, gzb;
-
-  // Gyro calibration
-  int gyroStatus = IMU.calibrateGyro();
-
-  gxb = IMU.getGyroBiasX_rads();
-  gyb = IMU.getGyroBiasY_rads();
-  gzb = IMU.getGyroBiasZ_rads();
-  Serial.println("Gyro calibration results");
-  Serial.println("gxb:\t" + String(gxb) + "\t gyb:\t" + String(gyb) + "\t gzb:\t" + String(gzb));
-
-  delay(100);
-  
-  // Magnetometer calibration
-  IMU.setMagCalX(magBias[0], magScale[0]);
-  IMU.setMagCalY(magBias[1], magScale[1]);
-  IMU.setMagCalZ(magBias[2], magScale[2]);
-  
-  delay(100);
-  
-  // Sanity check
-  mxb = IMU.getMagBiasX_uT();
-  myb = IMU.getMagBiasY_uT();
-  mzb = IMU.getMagBiasZ_uT();
-
-  mxs = IMU.getMagScaleFactorX();
-  mys = IMU.getMagScaleFactorY();
-  mzs = IMU.getMagScaleFactorZ();  
-
-  Serial.println("Magnetometer Calibration Sanity Check:");
-  Serial.println("mxb:\t" + String(mxb) + "\t mxs:\t" + String(mxs) + "\t myb:\t" + String(myb) + "\t mys:\t" + String(mys) + "\t mzb:\t" + String(mzb) + "\t mzs:\t" + String(mzs) );
-  
+  pinMode(tone_pin, INPUT);
+  pinMode(button_pin, INPUT_PULLDOWN);
+  pinMode(led_pin, OUTPUT);
+  Serial.begin(9600);
 }

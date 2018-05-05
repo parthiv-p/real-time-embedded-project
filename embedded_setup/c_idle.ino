@@ -4,7 +4,7 @@ void idle_fcn(){
 
   // check proximity repeatedly
   while(1){
-    if (find_distance() < 5){
+    if (check_button()){
       key = start_k;
       break;
     }
