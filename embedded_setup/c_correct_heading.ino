@@ -1,6 +1,6 @@
 void correct_heading_fcn(){  
 
-  delay(1000);
+  delay(100);
   stateTime = millis();
   event_t prev_event = key;
         
@@ -13,22 +13,8 @@ void correct_heading_fcn(){
       motorStop();
       reset_quaternion();
       refCommand = 0;
-      
-      if (prev_event == decision_made_k)
-      {
-        Serial.println("Timeout for decision turning");
-        key = dec_timeout_k;
-        break;
-      } 
-      
-      /*
-      else if (prev_event == timeout_k)
-      {
-        Serial.println("Timeout for straight movement correction");
-        key = fwd_timeout_k;
-        break;
-      }
-      */
+      key = settle_time_k; // change
+      break;
     }  
   }
 

@@ -23,7 +23,7 @@ int pwmLeft, pwmRight;
 double fwdScale = 0.4, turnScale = 0.5, base = 0.6;
 
 unsigned long startTime = micros(), dutyTime, execTime, stateTime, lastUpdate = 0; // timing variables
-unsigned long settleTime = 2000, straightLimit = 2000; // For the purposes of testing time triggers
+unsigned long settleTime = 1500, straightLimit = 2000; // For the purposes of testing time triggers
 
 // C4V left, C5V right
 
@@ -47,16 +47,14 @@ void sensorRead()   // Gather the latest data from the sensor
   execTime = micros(); 
   deltat = ((execTime - lastUpdate)/1000000.0f);
   lastUpdate = execTime;
+
+  MadgwickQuaternionUpdate(ax, ay, az, gx, gy, gz,  my,  mx, mz);
+  yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]); 
 }
 
 void update_command()    // Compute current yaw and generate feedback command
 {
-  execTime = micros();
   sensorRead();
-  
-  MadgwickQuaternionUpdate(ax, ay, az, gx, gy, gz,  my,  mx, mz);
-  yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);   
-  
   speedCommand = PID_control(yaw);
   
   if (speedCommand > 1){ speedCommand = 1; } 
@@ -85,7 +83,6 @@ void turn()   // Correct the heading to the reference angle (refCommand)
 
 void forward()    // Forward motion in feedback loop
 {	
-  reset_quaternion();
 	update_command(); 
   if (dutyTime >= 20000) //one PWM duty cycle have passed
   {
@@ -95,7 +92,7 @@ void forward()    // Forward motion in feedback loop
     pwmRight = (int)speedRight + 2250;
     FTM0_C4V = pwmLeft;
     FTM0_C5V = pwmRight;
-    Serial.println("fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
+    //Serial.println("fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
     startTime = micros();
   }
 
@@ -120,12 +117,12 @@ void reverse()    // Backward motion in feedback loop
 
 }
 
-void left(){
+void right(){
    FTM0_C4V = 2000;
    FTM0_C5V = 2500;
 }
 
-void right(){
+void left(){
    FTM0_C4V = 2500;
    FTM0_C5V = 2000;
 }

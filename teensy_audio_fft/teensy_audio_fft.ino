@@ -37,14 +37,14 @@ void setup() {
   AudioMemory(12);
   for(int i = 0 ; i < 10 ; i++)
   {
-    tones[i].frequency(5000+500*i, 50000);
+    tones[i].frequency(5000+500*i, 500);
   }
   //myFFT.windowFunction(AudioWindowHanning1024);
 }
 
 void loop() {
   float mags[10] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-  int counter = 0;
+  //int counter = 0;
   Now = millis();
   while(millis() - Now < 1250)
   {
@@ -53,9 +53,9 @@ void loop() {
     {
       mags[i] += tones[i].read();
     }
-    counter++;
+    //counter++;
   }
-  Serial.print("Count: " + String(counter));
+  //Serial.print("Count: " + String(counter));
   for(int i = 0 ; i < 10 ; i++)
   {
     Serial.print("\t" + String(mags[i]));

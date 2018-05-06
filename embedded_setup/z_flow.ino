@@ -16,6 +16,14 @@ void loop(){
             Serial.println("fingerprinting");
             fingerprint_fcn();
             break;
+        case scan_s:
+            Serial.println("scanning");
+            scan_fcn();
+            break;
+        case correct_heading_s:
+            Serial.println("correcting heading");
+            correct_heading_fcn();
+            break;
     }
 
     // when a new event occurs, update state

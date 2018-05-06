@@ -1,6 +1,7 @@
 typedef enum{
     idle_s,
     drive_straight_s,
+    correct_heading_s,
     fingerprint_s,
     scan_s
 } state_t;
@@ -11,6 +12,7 @@ typedef enum{
     last_beacon_k,
     not_done_k,
     found_beacon_k,
+    settle_time_k,
     eol_k
 }event_t;
 
@@ -27,11 +29,12 @@ const state_transition_t transition_table[] = {
     {fingerprint_s,         not_done_k,          scan_s},
     {fingerprint_s,         last_beacon_k,       idle_s},
     {scan_s,                found_beacon_k,      drive_straight_s},
+    //{correct_heading_s,     settle_time_k,       drive_straight_s},
     {idle_s,                eol_k,               idle_s}              // must be the last entry in table
 };
 
 // initial state
-state_t current_state = idle_s;
+state_t current_state = scan_s;
 
 // global key
 event_t key;

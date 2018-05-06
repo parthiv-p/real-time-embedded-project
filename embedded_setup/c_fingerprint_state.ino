@@ -1,6 +1,9 @@
 void fingerprint_fcn(){
 
-  delay(3000);
+  //delay(3000);
+  Serial.println("fingerprinting");
+  while(1){}
+  /*
 
   // check if we are at last tone
   get_fingerprint();
@@ -17,5 +20,6 @@ void fingerprint_fcn(){
   else{
     key = not_done_k;
   }
+  */
 }
 
