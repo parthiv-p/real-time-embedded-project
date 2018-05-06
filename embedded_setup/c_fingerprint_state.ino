@@ -2,7 +2,11 @@ void fingerprint_fcn(){
 
   //delay(3000);
   Serial.println("fingerprinting");
-  while(1){}
+  // No beacon testing
+  key = not_done_k;
+  delay(2000);
+  
+  //while(1){}
   /*
 
   // check if we are at last tone

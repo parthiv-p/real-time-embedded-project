@@ -1,19 +1,16 @@
-#define SCAN_THRESH 80
-#define OBJECT_CONFIDENCE 50
+#define SCAN_THRESH 175
+#define OBJECT_CONFIDENCE 25
 
 void scan_fcn(){
   int count = 0;
   int prev = 80;
   delay(100);
-  Serial.println("Inside scan_fcn");
-  
+    
 	while (1){
-    Serial.println("Right turn");
-		right();
+		right();  // CW scan
     sensorRead();
-    //delay(25);
     int dist = find_distance_ir();
-    if(dist < SCAN_THRESH && prev < SCAN_THRESH)
+    if(dist > SCAN_THRESH && prev > SCAN_THRESH)
     {
       count++;
     } else {
@@ -24,9 +21,10 @@ void scan_fcn(){
       break;
 	}
  
-  Serial.println("Found beacon");
+  Serial.println("found beacon");
 	motorStop();
-  refCommand = yaw;
+  delay(100);
+  reset_quaternion();
 	key = found_beacon_k;
 
 }

@@ -2,8 +2,8 @@
 
 SharpIR sensor(GP2Y0A21YK0F, 21);
 
-uint8_t num_med_ir = 5;
-int measurements_ir[5];
+const int num_med_ir = 10;
+int measurements_ir[num_med_ir];
 
 void swap_ir(int *p,int *q) {
    int t;

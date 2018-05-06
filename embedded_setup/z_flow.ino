@@ -20,9 +20,9 @@ void loop(){
             Serial.println("scanning");
             scan_fcn();
             break;
-        case correct_heading_s:
-            Serial.println("correcting heading");
-            correct_heading_fcn();
+        case beacon_avoid_s:
+            Serial.println("avoiding beacon");
+            beacon_avoid_fcn();
             break;
     }
 

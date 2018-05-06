@@ -22,7 +22,7 @@ int pwmLeft, pwmRight;
 
 double fwdScale = 0.4, turnScale = 0.5, base = 0.6;
 
-unsigned long startTime = micros(), dutyTime, execTime, stateTime, lastUpdate = 0; // timing variables
+unsigned long startTime = micros(), dutyTime, execTime, turnTime, lastUpdate = 0; // timing variables
 unsigned long settleTime = 1500, straightLimit = 2000; // For the purposes of testing time triggers
 
 // C4V left, C5V right
@@ -65,7 +65,8 @@ void update_command()    // Compute current yaw and generate feedback command
   dutyTime = micros() - startTime;
 }
 
-void turn()   // Correct the heading to the reference angle (refCommand)
+/*
+void turn()   // Correct the heading to the reference angle (refCommand). marked for deletion
 {
   update_command();
   if (dutyTime >= 20000) //one PWM duty cycle have passed
@@ -80,6 +81,30 @@ void turn()   // Correct the heading to the reference angle (refCommand)
     startTime = micros();
   }
 }
+*/
+
+void correct_heading()   // Correct the heading to the reference angle (refCommand)
+{
+  turnTime = millis();
+  while(millis() - turnTime <= settleTime)
+  {
+    update_command();
+    if (dutyTime >= 20000) //one PWM duty cycle have passed
+    {
+      speedLeft = speedCommand * 750.0 * -1.0 * turnScale;
+      speedRight = speedCommand * 750.0 *  turnScale;
+      pwmLeft = (int)speedLeft + 2250;
+      pwmRight = (int)speedRight + 2250;
+      FTM0_C4V = pwmLeft;
+      FTM0_C5V = pwmRight;
+      //Serial.println("turn "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
+      startTime = micros();
+    }
+  }
+  motorStop();
+  reset_quaternion();
+  refCommand = 0;
+}
 
 void forward()    // Forward motion in feedback loop
 {	
@@ -92,9 +117,10 @@ void forward()    // Forward motion in feedback loop
     pwmRight = (int)speedRight + 2250;
     FTM0_C4V = pwmLeft;
     FTM0_C5V = pwmRight;
-    //Serial.println("fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
+    //Serial.println("yaw:  " + String(yaw) + "\t fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
     startTime = micros();
   }
+  
 
 //  FTM0_C4V = 2620; // discrepancy is to fix small error
 //  FTM0_C5V = 2600;
@@ -131,6 +157,7 @@ void motorStop()   // Stop vehicle immediately
 {
 	FTM0_C4V = 2250;
 	FTM0_C5V = 2250;
+  delay(20);
   resetPID();
 }
 
