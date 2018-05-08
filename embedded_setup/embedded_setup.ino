@@ -41,7 +41,7 @@ uint8_t sharp_pin = 21;
 uint8_t trig_pin = 22;
 uint8_t echo_pin = 23;
 uint8_t tone_pin = A0; // analog input 0 (pin 14)
-uint8_t button_pin = 15;
+uint8_t button_pin = 14;
 uint8_t led_pin = 13; // to signal that we are finished
 
 float magBias[3] = {18.3323, 19.5858, -19.8197}, magScale[3] = {0.9555, 1.0546, 0.9949}; // Location specific

@@ -1,27 +1,46 @@
 #define BLINK_TIME 250
 
+
+
 void idle_fcn(){
 
-  unsigned long Now = millis();
-  int led_state = -1;
+  unsigned long Now = millis(), debounce_time = 0, debounce_delay = 50;
+  int led_state = LOW;
+  int reading, button_state, prev_button_state = LOW;
+  
   delay(3000);
 
-  // check proximity repeatedly
+  // check button press repeatedly
   while(1){
     if(millis() - Now > BLINK_TIME)
     {
-      led_state *= -1;
-      if(led_state > 0)
-        digitalWrite(led_pin, HIGH);
-      else if(led_state < 0)
-        digitalWrite(led_pin, LOW);
+      led_state = !led_state;
+      digitalWrite(led_pin, led_state);
+      Now = millis();
     }
     
-    if (check_button()){
-      key = start_k;
-      digitalWrite(led_pin, LOW);
-      break;
+    reading = digitalRead(button_pin);
+    if(reading != prev_button_state)
+    {
+      debounce_time = millis();
     }
+
+    if((millis() - debounce_time) > debounce_delay)
+    {
+      if(reading != button_state)
+      {
+        button_state = reading;  
+        if(button_state == LOW)
+        {
+          Serial.println("Button pressed");
+          key = start_k;
+          digitalWrite(led_pin, LOW);
+          break;
+        }
+      }
+    }
+    prev_button_state = reading;
   }
+  delay(3000);
 }
 

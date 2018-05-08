@@ -1,4 +1,4 @@
-#define FWD_TIMEOUT 1500 // tbd experimentally
+#define FWD_TIMEOUT 2000 // tbd experimentally
 
 void beacon_avoid_fcn(){  
   

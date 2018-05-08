@@ -38,5 +38,6 @@ float find_distance(){
    }
 
   sort(measurements, num_med);
+  Serial.println("Ultrasonic dist: " + String(measurements[num_med/2]));
   return measurements[num_med/2];
 }

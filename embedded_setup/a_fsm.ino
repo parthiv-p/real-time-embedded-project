@@ -35,7 +35,7 @@ const state_transition_t transition_table[] = {
 };
 
 // initial state
-state_t current_state = scan_s;
+state_t current_state = idle_s;
 
 // global key
 event_t key;
