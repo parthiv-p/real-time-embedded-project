@@ -1,17 +1,17 @@
 #define BLINK_TIME 250
 
-
-
 void idle_fcn(){
 
   unsigned long Now = millis(), debounce_time = 0, debounce_delay = 50;
   int led_state = LOW;
-  int reading, button_state, prev_button_state = LOW;
+  int reading, button_state = LOW, prev_button_state = LOW;
   
-  delay(3000);
+  delay(2000);
 
   // check button press repeatedly
   while(1){
+    //int test = find_distance_ir();
+    //Serial.println(String(test));
     if(millis() - Now > BLINK_TIME)
     {
       led_state = !led_state;

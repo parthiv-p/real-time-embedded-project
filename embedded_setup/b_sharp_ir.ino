@@ -1,6 +1,6 @@
 #define VAR_THRESHOLD 250.0f
 
-SharpIR sensor(GP2Y0A21YK0F, 21);
+
 
 const int num_med_ir = 10;
 int measurements_ir[num_med_ir];
@@ -22,6 +22,10 @@ void sort_ir(int a[],int n) {
 }
 
 int find_distance_ir(){
+
+  SharpIR sensor(GP2Y0A21YK0F, sharp_pin);
+  
+  Serial.println("Called function");
   float avg = 0, var = 0;
   for (int i = 0; i < num_med_ir; i++){
    int dist = (sensor.getDistance()*30/18);

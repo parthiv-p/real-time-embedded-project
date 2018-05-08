@@ -70,7 +70,7 @@ uint16_t get_closest_beacon_index(){
       max_pos = i;
     }
   }
-
+  
   Serial.print("Tone: ");
   Serial.print(tone_list[max_pos]);
   Serial.print("    Count: ");
@@ -113,7 +113,8 @@ void get_fingerprint(){
     delay(24);
 
   // index to closest beacon
-  idx = get_closest_beacon_index();
+  idx = 0;
+  //idx = get_closest_beacon_index();
     
   }
 }

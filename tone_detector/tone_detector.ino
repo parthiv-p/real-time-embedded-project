@@ -1,7 +1,7 @@
 #include "arduinoFFT.h"
 
 // hardware setup
-uint8_t channel_pin = A0; // analog input 0 (pin 14)
+uint8_t channel_pin = A2; // analog input 0 (pin 14)
 
 // FFT setup
 arduinoFFT FFT = arduinoFFT(); 

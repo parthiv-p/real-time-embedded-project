@@ -35,14 +35,14 @@ const state_transition_t transition_table[] = {
 };
 
 // initial state
-state_t current_state = idle_s;
+state_t current_state = fingerprint_s;
 
 // global key
 event_t key;
 
 // update state based on key
 void update_state(){
-    int i;
+    int i = 0;
     while(transition_table[i].key != eol_k){
         if ((current_state == transition_table[i].current) &&
             (key == transition_table[i].key)){

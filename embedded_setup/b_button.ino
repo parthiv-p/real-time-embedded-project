@@ -1,5 +1,5 @@
 // NOTE: if we don't have a button to press, we can simply jump 5V to pin 15 to simulate a button press
-
+// obsolete
 uint8_t prev_button_state = LOW;
 
 float check_button(){

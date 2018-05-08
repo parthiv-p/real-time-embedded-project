@@ -21,7 +21,7 @@ void setup() {
 //Single ended channels AD23- AD4, we want AD5
 
 Serial.begin(38400);
-pinMode(14, INPUT);
+pinMode(16, INPUT);
 sampling_period_us = round(1000000*(1.0/SAMPLING_FREQUENCY));
 }
 
