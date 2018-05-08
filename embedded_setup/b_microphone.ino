@@ -7,10 +7,13 @@
  * - so inbetween our 20 samples, we delay 77ms
  */
 
+#include "arduinoFFT.h"
+
 // FFT setup
 arduinoFFT FFT = arduinoFFT(); 
 const uint16_t samples = 512;
 const double samplingFrequency = 22000;
+uint8_t num_samp = 10;
 uint16_t sampling_period_us = uint16_t(1000000*(1.0/samplingFrequency));
 unsigned long microseconds;
 double vReal[samples];
@@ -84,17 +87,16 @@ void get_fingerprint(){
   }
 
   // uniformly sample every 73ms over 2 second period
-  for(uint8_t j = 0; j < 20; j++){
+  for(uint8_t j = 0; j < num_samp; j++){
   
     // sample ADC
-    for(uint16_t i=0; i<samples; i++)
-    {
+    for(uint16_t i=0; i<samples; i++){
         // this is a bad way to sample... change this to interrupt driven and don't use analogRead
         microseconds = micros();    //Overflows after around 70 minutes!
         vReal[i] = analogRead(tone_pin);
         vImag[i] = 0;
         while(micros() < (microseconds + sampling_period_us)); // wait until next sample interval
-    }
+      }
     
     // do FFT
     FFT.Windowing(vReal, samples, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
@@ -108,13 +110,12 @@ void get_fingerprint(){
     add_results();
 
     // delay
-    delay(73);
-
-  }
+    delay(24);
 
   // index to closest beacon
   idx = get_closest_beacon_index();
     
+  }
 }
 
 void print_results(){
