@@ -1,6 +1,6 @@
 #include "arduinoFFT.h"
  
-#define SAMPLES 512           //Must be a power of 2
+#define SAMPLES 128           //Must be a power of 2
 #define SAMPLING_FREQUENCY 22000 //Hz, must be less than 10000 due to ADC
  
 arduinoFFT FFT = arduinoFFT();
@@ -34,10 +34,8 @@ void loop() {
     {
         microseconds = micros();    //Overflows after around 70 minutes!
 
-        uint16_t data = analogRead(14); // Data result register A
-        float volt = (float)data; // conversion
-        
-        vReal[i] = volt;
+        uint16_t data = analogRead(16); // Data result register A        
+        vReal[i] = (double)data;
         vImag[i] = 0;
      
         while(micros() < (microseconds + sampling_period_us)){
@@ -52,17 +50,22 @@ void loop() {
     //Serial.println("Time: " + String(micros() - Now));
     
     double peak = FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQUENCY);
+
+    float amp = vReal[55];
+    if(amp < 10.0f)
+      amp = 0;
  
     /*PRINT RESULTS*/ 
+    /*
     for(int i=0; i<(SAMPLES/2); i++)
     {
-        /*View all these three lines in serial terminal to see which frequencies has which amplitudes*/         
+        // View all these three lines in serial terminal to see which frequencies has which amplitudes         
         Serial.println((i * 1.0 * SAMPLING_FREQUENCY) / SAMPLES, 1);
         //Serial.print(" ");
         //Serial.println(vReal[i], 1);    //View only this line in serial plotter to visualize the bins
     }
-
-    //Serial.println(peak);     //Print out what frequency is the most dominant.
-    delay(100);
+    */
+    Serial.println(String(amp) + "\t time: " + String(( micros() - Now )));     //Print out what frequency is the most dominant.
+    //delay(100);
     
 }

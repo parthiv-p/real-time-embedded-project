@@ -1,7 +1,7 @@
 float duration;
 float distance;
-uint8_t num_med = 5;
-float measurements[5];
+uint8_t num_med = 10;
+float measurements[10];
 
 void swap(float *p,float *q) {
    float t;

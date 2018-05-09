@@ -1,12 +1,16 @@
 #define SCAN_THRESH 80
 #define OBJECT_CONFIDENCE 25
 #define FAULT_LIMIT 5
+#define BWD_TIMEOUT 1750 
+#define SCAN_TIMEOUT 15000
 
 void scan_fcn(){
   int count = 0, fault_count = 0;
   int prev = 90;
   delay(100);
-    
+
+  unsigned long scan_time = millis();
+  
 	while (1){
 		right();  // CW scan
     sensorRead();
@@ -23,12 +27,12 @@ void scan_fcn(){
       Serial.println("IR object detected");
       motorStop();
       float ultrasonic_dist = find_distance();
-      if (ultrasonic_dist < SCAN_THRESH && ultrasonic_dist > 2.0f)
+      if (ultrasonic_dist < SCAN_THRESH && ultrasonic_dist > 1.0f)
       {
-        Serial.println("Ultrasonic object detected");
+        Serial.println("ultrasonic confirm");
         break;
       } else {
-        Serial.println("Ultrasonic rejects the obj");
+        Serial.println("ultrasonic reject");
         count = 0;
         fault_count++;
         continue;
@@ -40,6 +44,16 @@ void scan_fcn(){
       refCommand = PI / 16.0f;
       correct_heading();
       fault_count = 0;
+    }
+    if(millis() - scan_time > SCAN_TIMEOUT)
+    {
+      reset_quaternion();
+      unsigned long bwd_time = millis();
+      while(millis() - bwd_time < BWD_TIMEOUT)
+      {
+        reverse();
+      }
+      scan_time = millis();
     }
 	}
  

@@ -6,7 +6,7 @@
  * - 1.53s / 20 = 0.077s = 77ms
  * - so inbetween our 20 samples, we delay 77ms
  */
-
+/*
 #include "arduinoFFT.h"
 
 // FFT setup
@@ -99,9 +99,9 @@ void get_fingerprint(){
       }
     
     // do FFT
-    FFT.Windowing(vReal, samples, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
-    FFT.Compute(vReal, vImag, samples, FFT_FORWARD); /* Compute FFT */
-    FFT.ComplexToMagnitude(vReal, vImag, samples); /* Compute magnitudes */
+    FFT.Windowing(vReal, samples, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  // Weigh data 
+    FFT.Compute(vReal, vImag, samples, FFT_FORWARD); // Compute FFT 
+    FFT.ComplexToMagnitude(vReal, vImag, samples); // Compute magnitudes 
   
     // simplify histogram
     bin_results();
@@ -128,3 +128,5 @@ void print_results(){
   }
   Serial.println("============================");
 }
+
+*/

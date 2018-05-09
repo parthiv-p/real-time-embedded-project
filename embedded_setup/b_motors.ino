@@ -23,7 +23,7 @@ int pwmLeft, pwmRight;
 double fwdScale = 0.4, turnScale = 0.5, base = 0.6;
 
 unsigned long startTime = micros(), dutyTime, execTime, turnTime, lastUpdate = 0; // timing variables
-unsigned long settleTime = 1000, straightLimit = 2000; // For the purposes of testing time triggers
+unsigned long settleTime = 1000; // For the purposes of testing time triggers
 
 // C4V left, C5V right
 
@@ -102,7 +102,6 @@ void forward()    // Forward motion in feedback loop
     //Serial.println("yaw:  " + String(yaw) + "\t fwd "+ String(speedCommand, 4) + "\t pwm left " + String(pwmLeft) + "\t pwm right " + String(pwmRight));
     startTime = micros();
   }
-  
 }
 
 void reverse()    // Backward motion in feedback loop

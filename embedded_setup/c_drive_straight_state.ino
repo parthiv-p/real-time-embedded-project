@@ -1,10 +1,13 @@
-void drive_straight_fcn(){  
+#define STRAIGHT_TIMEOUT 5000
 
-  delay(100);
+void drive_straight_fcn(){  
   
+  delay(100);
+  unsigned long straight_time = millis();
   // drive motors
   // check proximity repeatedly
-   while(1){
+  while(1){
+
     
     forward(); //from b_motors
     // Key check
@@ -15,5 +18,25 @@ void drive_straight_fcn(){
       key = danger_zone_k;
       break;
     }
+
+    if(operation_mode == 0)
+    {
+      if(millis() - straight_time > STRAIGHT_TIMEOUT)
+      {
+        motorStop();
+        key = straight_timeout_k;
+        break;
+      }
+    } else {
+      if(millis() - straight_time > 4*STRAIGHT_TIMEOUT)
+      {
+        motorStop();
+        key = straight_timeout_k;
+        break;
+      }
+    }
   }
+
+  if(operation_mode == 1)
+    operation_mode = 0;
 }

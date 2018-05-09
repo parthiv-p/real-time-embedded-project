@@ -43,6 +43,9 @@ uint8_t echo_pin = 23;
 uint8_t tone_pin = 16; // analog input 0 (pin 14)
 uint8_t button_pin = 14;
 uint8_t led_pin = 13; // to signal that we are finished
+uint8_t mode_pin = 12;
+uint8_t operation_mode = 0;
+
 /*
 AudioInputAnalog         audioInput;
 AudioAnalyzeToneDetect   final_tone;
@@ -70,7 +73,8 @@ void setup(){
   pinMode(tone_pin, INPUT);
   pinMode(button_pin, INPUT_PULLDOWN);
   pinMode(led_pin, OUTPUT);
-
+  pinMode(mode_pin, INPUT_PULLDOWN);
+  
   // PWM channel setup
   PORTD_PCR4 |= (1U << 10); // mux to FTM0_C4 for pin 6 - left
   PORTD_PCR5 |= (1U << 10); // mux to FTM0_C5 for pin 20 - right
@@ -127,5 +131,9 @@ void setup(){
 
   Serial.println("Magnetometer Calibration Sanity Check:");
   Serial.println("mxb:\t" + String(mxb) + "\t mxs:\t" + String(mxs) + "\t myb:\t" + String(myb) + "\t mys:\t" + String(mys) + "\t mzb:\t" + String(mzb) + "\t mzs:\t" + String(mzs) );
-  
+
+  delay(100);
+
+  operation_mode = digitalRead(mode_pin);
+  Serial.println("Mode set to: " + String(operation_mode));
 }
